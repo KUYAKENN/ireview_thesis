@@ -1,0 +1,181 @@
+/* Profile Card */
+.profile-card {
+  max-width: 550px;
+  margin: auto;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+/* Edit Button */
+.edit-btn {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s ease;
+}
+
+.edit-btn:hover {
+  background: #4f46e5;
+}
+
+/* Profile Image */
+.profile-image-container {
+  text-align: center;
+  margin-top: 1.5rem;
+  position: relative;
+}
+
+.profile-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #6366f1;
+  transition: all 0.3s ease;
+}
+
+.upload-overlay {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #6366f1;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.upload-overlay:hover {
+  background: #4f46e5;
+}
+
+/* Form Layout */
+.form-layout {
+  padding: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group {
+  flex: 1;
+}
+
+/* Labels */
+label {
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+/* Input Styles */
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-container i {
+  position: absolute;
+  left: 12px;
+  color: #4a5568;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.5);
+}
+
+/* Metadata */
+.metadata {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.metadata p {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: #f3f4f6;
+}
+
+.save-btn {
+  background: #6366f1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.save-btn:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+.save-btn:hover {
+  background: #4f46e5;
+}

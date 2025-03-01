@@ -1,0 +1,253 @@
+<!-- login.component.html -->
+<div class="video-background">
+  <video autoplay muted loop playsinline>
+    <source src="assets/bg.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+</div>
+
+<div class="login-container">
+  <div class="login-card" #loginCard>
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="logo-container">
+        <div class="bulb-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path fill="white" d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zM9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1z"/>
+          </svg>
+        </div>
+        <span class="logo-text">Review</span>
+      </div>
+
+      <!-- Conditional Rendering for Left Panel -->
+      @if (isLoginMode && !showForgotPassword) {
+        <h1>Welcome Back!</h1>
+        <p class="subtitle">To stay connected with us<br>please login with your personal info</p>
+        <button class="sign-in-btn" (click)="toggleMode()">SIGN UP</button>
+      } @else if (!isLoginMode && !showForgotPassword) {
+        <h1>Create Account</h1>
+        <p class="subtitle">Sign up to get started<br>with your new account</p>
+        <button class="sign-in-btn" (click)="toggleMode()">SIGN IN</button>
+      } @else {
+        <h1>Reset Password</h1>
+        <p class="subtitle">We'll send you instructions<br>to reset your password</p>
+        <button class="sign-in-btn" (click)="toggleForgotPassword()">BACK TO LOGIN</button>
+      }
+
+      <div class="bottom-links">
+        <span>CREATE HERE</span> | <a [routerLink]="['/about']" class="about-link">ABOUT</a>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel" #rightPanel>
+      @if (!showForgotPassword) {
+        <!-- Login Form -->
+        @if (isLoginMode) {
+          <h2>Welcome</h2>
+          <p class="login-text">Login to your account to continue</p>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" [@fadeInOut]>
+            <div class="form-group">
+              <input 
+                type="email" 
+                formControlName="email" 
+                placeholder="Email"
+                class="form-input"
+              >
+              @if (emailError) {
+                <div class="error-message">{{ emailError }}</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <div class="password-input">
+                <input 
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password" 
+                  placeholder="Password"
+                  class="form-input"
+                >
+                <button type="button" class="toggle-password" (click)="togglePassword('login')">
+                  <i class="eye-icon">👁</i>
+                </button>
+              </div>
+              @if (passwordError) {
+                <div class="error-message">{{ passwordError }}</div>
+              }
+            </div>
+
+            <div class="forgot-password">
+              <a href="#" (click)="toggleForgotPassword($event)">Forgot your password?</a>
+            </div>
+
+            <button type="submit" 
+                    class="login-button" 
+                    [disabled]="!loginForm.valid || isLoading"
+                    [class.loading]="isLoading"
+                    [class.success]="isSuccessful">
+              LOG IN
+            </button>
+
+            <div class="signup-prompt">
+              Don't have an account? <a href="#" (click)="toggleMode(); $event.preventDefault()">sign up</a>
+            </div>
+          </form>
+
+        <!-- Signup Form -->
+        } @else {
+          <h2>Get Started</h2>
+          <p class="login-text">Create your account to continue</p>
+
+          <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" [@fadeInOut]>
+            <!-- First Name Field -->
+            <div class="form-group">
+              <input 
+                type="text" 
+                formControlName="firstName" 
+                placeholder="First Name"
+                class="form-input"
+              >
+              @if (signupForm.get('firstName')?.errors?.['required'] && signupForm.get('firstName')?.touched) {
+                <div class="error-message">First Name is required</div>
+              }
+            </div>
+
+            <!-- Last Name Field -->
+            <div class="form-group">
+              <input 
+                type="text" 
+                formControlName="lastName" 
+                placeholder="Last Name"
+                class="form-input"
+              >
+              @if (signupForm.get('lastName')?.errors?.['required'] && signupForm.get('lastName')?.touched) {
+                <div class="error-message">Last Name is required</div>
+              }
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-group">
+              <input 
+                type="email" 
+                formControlName="email" 
+                placeholder="Email"
+                class="form-input"
+              >
+              @if (emailError) {
+                <div class="error-message">{{ emailError }}</div>
+              }
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+              <div class="password-input">
+                <input 
+                  [type]="showSignupPassword ? 'text' : 'password'"
+                  formControlName="password" 
+                  placeholder="Password"
+                  class="form-input"
+                >
+                <button type="button" class="toggle-password" (click)="togglePassword('signup')">
+                  <i class="eye-icon">👁</i>
+                </button>
+              </div>
+              @if (passwordError) {
+                <div class="error-message">{{ passwordError }}</div>
+              }
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+              <div class="password-input">
+                <input 
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  formControlName="confirmPassword" 
+                  placeholder="Confirm Password"
+                  class="form-input"
+                >
+                <button type="button" class="toggle-password" (click)="togglePassword('confirm')">
+                  <i class="eye-icon">👁</i>
+                </button>
+              </div>
+              @if (confirmPasswordError) {
+                <div class="error-message">{{ confirmPasswordError }}</div>
+              }
+            </div>
+
+            <button type="submit" 
+                    class="login-button" 
+                    [disabled]="!signupForm.valid || isLoading"
+                    [class.loading]="isLoading"
+                    [class.success]="isSuccessful">
+              SIGN UP
+            </button>
+
+            <div class="signup-prompt">
+              Already have an account? <a href="#" (click)="toggleMode(); $event.preventDefault()">sign in</a>
+            </div>
+          </form>
+        }
+      } @else {
+        <!-- Forgot Password Form -->
+        <div class="forgot-password-container" [@fadeInOut]>
+          <div class="text-center">
+            <div class="mail-icon-container">
+              <i class="mail-icon">✉️</i>
+            </div>
+            <h2>Reset Password</h2>
+            <p class="reset-text">
+              Enter your email and we'll send you instructions to reset your password
+            </p>
+          </div>
+
+          @if (formError) {
+            <div class="error-alert" [@shake]="shakeError">{{ formError }}</div>
+          }
+
+          @if (isSuccessful) {
+            <div class="success-alert">
+              Password reset link has been sent to your email. Please check your inbox.
+            </div>
+          } @else {
+            <form [formGroup]="forgotPasswordForm" (ngSubmit)="handleForgotPassword()">
+              <div class="form-group">
+                <input 
+                  type="email" 
+                  formControlName="email" 
+                  placeholder="Email"
+                  class="form-input"
+                >
+                @if (forgotPasswordForm.get('email')?.errors?.['required'] && forgotPasswordForm.get('email')?.touched) {
+                  <div class="error-message">Email is required</div>
+                }
+                @if (forgotPasswordForm.get('email')?.errors?.['email'] && forgotPasswordForm.get('email')?.touched) {
+                  <div class="error-message">Please enter a valid email</div>
+                }
+              </div>
+
+              <button type="submit" 
+                      class="login-button" 
+                      [disabled]="!forgotPasswordForm.valid || isLoading"
+                      [class.loading]="isLoading"
+                      [class.success]="isSuccessful">
+                @if (isLoading) {
+                  <span class="loading-spinner"></span>
+                  Sending Reset Link...
+                } @else {
+                  Send Reset Link
+                }
+              </button>
+
+              <button type="button" 
+                      class="back-button"
+                      (click)="toggleForgotPassword()">
+                Back to Login
+              </button>
+            </form>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

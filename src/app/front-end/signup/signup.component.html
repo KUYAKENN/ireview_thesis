@@ -1,0 +1,85 @@
+<div class="signup-container">
+    <div class="signup-card">
+      <div class="signup-header">
+        <h1>Create Account</h1>
+        <p>Join our community today</p>
+      </div>
+  
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            placeholder="your@email.com"
+          >
+          @if (email?.touched && email?.errors) {
+            @if (email?.errors?.['required']) {
+              <span class="error-message">Email is required</span>
+            }
+            @if (email?.errors?.['email']) {
+              <span class="error-message">Please enter a valid email</span>
+            }
+          }
+        </div>
+  
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-input">
+            <input 
+              [type]="showPassword ? 'text' : 'password'"
+              id="password" 
+              formControlName="password" 
+              placeholder="Create a strong password"
+            >
+            <button type="button" class="toggle-password" (click)="togglePassword()">
+              <i class="eye-icon" [class.visible]="showPassword"></i>
+            </button>
+          </div>
+          @if (password?.touched && password?.errors) {
+            @if (password?.errors?.['required']) {
+              <span class="error-message">Password is required</span>
+            }
+            @if (password?.errors?.['minlength']) {
+              <span class="error-message">Password must be at least 8 characters</span>
+            }
+            @if (password?.errors?.['pattern']) {
+              <span class="error-message">Password must contain at least one number</span>
+            }
+          }
+        </div>
+  
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-input">
+            <input 
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              id="confirmPassword" 
+              formControlName="confirmPassword" 
+              placeholder="Confirm your password"
+            >
+            <button type="button" class="toggle-password" (click)="toggleConfirmPassword()">
+              <i class="eye-icon" [class.visible]="showConfirmPassword"></i>
+            </button>
+          </div>
+          @if (confirmPassword?.touched && confirmPassword?.errors) {
+            @if (confirmPassword?.errors?.['required']) {
+              <span class="error-message">Please confirm your password</span>
+            }
+            @if (confirmPassword?.errors?.['passwordMismatch']) {
+              <span class="error-message">Passwords do not match</span>
+            }
+          }
+        </div>
+  
+        <button type="submit" class="signup-button" [disabled]="!signupForm.valid">
+          Create Account
+        </button>
+      </form>
+  
+      <p class="login-link">
+        Already have an account? <a [routerLink]="['/login']">Sign in</a>
+      </p>
+    </div>
+  </div>

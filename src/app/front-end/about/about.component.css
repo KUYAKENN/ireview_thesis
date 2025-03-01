@@ -1,0 +1,244 @@
+/* about.component.css */
+
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+  }
+  
+  .video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+    z-index: 1;
+  }
+  
+  .about-container {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    color: #333;
+  }
+  
+  .about-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 1200px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+  }
+  
+  .header-section {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .bulb-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .logo-container h1 {
+    font-size: 2.5rem;
+    color: #00a884;
+    margin: 0;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  .main-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+  
+  section h2 {
+    color: #00a884;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  .feature-card h3 {
+    color: #00a884;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+  
+  .feature-card p {
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+  
+  .team-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .team-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .member-info h3 {
+    color: #00a884;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .role {
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .contribution {
+    color: #888;
+    font-size: 0.9rem;
+  }
+  
+  .institution-section {
+    text-align: center;
+  }
+  
+  .institution-info h3 {
+    color: #00a884;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .institution-info p {
+    color: #666;
+    margin: 0.25rem 0;
+  }
+  
+  .back-section {
+    text-align: center;
+    margin-top: 3rem;
+  }
+  
+  .back-button {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #00a884 0%, #008f72 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 168, 132, 0.3);
+  }
+  
+  @media (max-width: 768px) {
+    .about-card {
+      padding: 2rem;
+    }
+  
+    .features-grid,
+    .team-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .logo-container h1 {
+      font-size: 2rem;
+    }
+  
+    .subtitle {
+      font-size: 1rem;
+    }
+  
+    section h2 {
+      font-size: 1.75rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .about-container {
+      padding: 1rem;
+    }
+  
+    .about-card {
+      padding: 1.5rem;
+    }
+  
+    .feature-card,
+    .team-card {
+      padding: 1.5rem;
+    }
+  }

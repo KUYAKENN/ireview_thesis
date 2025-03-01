@@ -1,0 +1,470 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Video Background */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.video-background video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+  z-index: 1;
+}
+
+/* Login Container */
+.login-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1.25rem;
+}
+
+.login-card {
+  display: flex;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Left Panel Styles */
+.left-panel {
+  background: linear-gradient(135deg, #00a884 0%, #008f72 100%);
+  padding: 3rem;
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: white;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.bulb-icon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.logo-text {
+  font-size: 2.5rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sign-in-btn {
+  padding: 1rem 2.5rem;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.3s ease;
+}
+
+.sign-in-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bottom-links {
+  position: absolute;
+  bottom: 1.5rem;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.bottom-links:hover {
+  opacity: 1;
+}
+
+/* Right Panel Styles */
+.right-panel {
+  width: 55%;
+  padding: 3rem 4rem;
+  background: white;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.right-panel h2 {
+  color: #00a884;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.login-text {
+  color: #666;
+  margin-bottom: 2.5rem;
+  font-size: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.password-input {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00a884;
+  box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.1);
+  background-color: white;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+  color: #333;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.375rem;
+  margin-left: 0.5rem;
+}
+
+.forgot-password {
+  text-align: right;
+  margin: 1rem 0 1.5rem;
+}
+
+.forgot-password a {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.forgot-password a:hover {
+  color: #00a884;
+}
+
+.login-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00a884 0%, #008f72 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.2);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+/* Forgot Password specific styles */
+.forgot-password-container {
+  padding: 2rem 0;
+}
+
+.mail-icon-container {
+  width: 4rem;
+  height: 4rem;
+  background-color: rgba(0, 168, 132, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.mail-icon {
+  font-size: 1.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.reset-text {
+  color: #666;
+  margin: 1rem 0 2rem;
+  line-height: 1.5;
+}
+
+.error-alert {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.success-alert {
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  width: 100%;
+  text-align: center;
+  color: #666;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.back-button:hover {
+  color: #00a884;
+}
+
+/* Loading states */
+.loading-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Button states */
+.login-button.loading {
+  background: linear-gradient(135deg, #00a884 0%, #008f72 100%);
+  color: transparent;
+  pointer-events: none;
+}
+
+.login-button.loading::after {
+  content: '';
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  top: 50%;
+  left: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin 0.8s linear infinite;
+}
+
+.login-button.success {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  pointer-events: none;
+}
+
+.login-button:disabled {
+  background: linear-gradient(135deg, #e0e0e0 0%, #d1d1d1 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.signup-prompt {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.signup-prompt a {
+  color: #00a884;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.signup-prompt a:hover {
+  color: #008f72;
+}
+
+/* Essential Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Links */
+.about-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.about-link:hover {
+  color: white;
+}
+
+.bottom-links span {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    height: auto;
+    margin: 1rem;
+    min-height: auto;
+  }
+  
+  .left-panel,
+  .right-panel {
+    width: 100%;
+    padding: 2rem;
+  }
+  
+  .left-panel {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+  
+  .bottom-links {
+    position: relative;
+    margin-top: 2rem;
+    bottom: auto;
+  }
+
+  .logo-text {
+    font-size: 2rem;
+  }
+
+  .left-panel h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .right-panel {
+    padding: 2rem 1.5rem;
+  }
+  
+  .login-card {
+    margin: 0.5rem;
+  }
+  
+  .form-input {
+    padding: 0.875rem 1rem;
+  }
+
+  .mail-icon-container {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .mail-icon {
+    font-size: 1.25rem;
+  }
+
+  .login-button {
+    padding: 0.875rem;
+  }
+}

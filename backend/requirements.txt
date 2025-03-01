@@ -1,0 +1,17 @@
+# pip install -r requirements.txt : Python version 3.12.1
+Flask
+Flask-Cors
+PyMuPDF
+pymupdf4llm
+flask_mysqldb
+google-generativeai
+bcrypt
+nltk
+spacy
+rake_nltk
+spacy
+networkx
+scikit-learn
+
+# After running `pip install -r requirements.txt`, run the following command to download the SpaCy model:
+# python -m spacy download en_core_web_sm

@@ -1,0 +1,56 @@
+<header [class.collapsed]="isSidebarCollapsed">
+    <div class="header-content">
+      <h1 class="page-title">DASHBOARD</h1>
+  
+      <!-- Profile Section -->
+      <div class="profile-section" (click)="toggleProfileMenu()" *ngIf="user">
+        <div class="profile-info">
+          <span class="welcome-text">Welcome back,</span>
+          <span class="name">{{user.firstName}}</span>
+        </div>
+        
+        <div class="avatar" [class.has-notification]="hasNotification">
+          <span class="avatar-text">{{user.firstName.charAt(0)}}</span>
+          <div class="notification-dot" *ngIf="hasNotification"></div>
+        </div>
+  
+        <!-- Profile Dropdown -->
+        <div class="profile-menu" *ngIf="showProfileMenu" [@dropdownAnimation]>
+          <div class="menu-header">
+            <div class="menu-avatar">
+              <span class="menu-avatar-text">{{user.firstName.charAt(0)}}</span>
+            </div>
+            <div class="menu-user-info">
+              <span class="profile-name">{{user.firstName}} {{user.lastName}}</span>
+              <span class="profile-email">{{user.email}}</span>
+            </div>
+          </div>
+  
+          <div class="menu-content">
+            <a class="menu-item" (click)="openProfileModal()">
+              <i class="menu-icon fas fa-user"></i>
+              <span>Edit Profile</span>
+            </a>
+            <!-- <a class="menu-item">
+              <i class="menu-icon fas fa-cog"></i>
+              <span>Settings</span>
+            </a> -->
+            <div class="divider"></div>
+            <a class="menu-item logout" (click)="logout()">
+              <i class="menu-icon fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Profile Modal -->
+    <div class="modal-backdrop" *ngIf="showProfileModal" 
+         [@backdropAnimation] 
+         (click)="closeProfileModal()">
+    </div>
+    <div class="profile-modal" *ngIf="showProfileModal" [@modalAnimation]>
+      <app-profile (closeModal)="closeProfileModal()"></app-profile>
+    </div>
+  </header>
