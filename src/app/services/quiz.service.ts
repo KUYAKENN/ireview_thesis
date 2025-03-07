@@ -22,6 +22,7 @@ interface BaseQuiz extends BaseItem {
 // Keep your existing Quiz interface
 export interface Quiz {
   id: number;
+  ids?: number[];
   docId?: string;
   docTitle: string;
   description?: string;
@@ -54,7 +55,7 @@ export interface QuizAttempt {
 
 export interface AttemptData {
   id: string;
-  quiz_id: number;
+  quiz_ids: number[];
   totalQuestions: number;
   score: number;
   start_time: Date;
@@ -172,7 +173,7 @@ export class QuizService {
           end_time: new DatePipe('en-US').transform(currentAttempt.endTime, 'yyyy-MM-dd HH:mm:ss.SSSSSS'),
           score: score,
           totalQuestions: total_items,
-          quiz_id: quiz.id
+          quiz_ids: quiz.ids ? quiz.ids : [quiz.id]
         }, {headers}))
         return currentAttempt;
       }

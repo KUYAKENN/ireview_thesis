@@ -17,7 +17,9 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
-  profilePictureUrl?: string | null;
+  profilePictureUrl: string | null;
+  created_at:string | null;
+  updated_at:string | null;
 }
 export interface PasswordUpdateData {
   currentPassword: string;
@@ -72,14 +74,26 @@ export class AuthService {
 
   updateProfile(profileData: ProfileUpdateData | FormData): Observable<UserProfile> {
     const userId = this.currentUserSubject.value?.id;
+    const user = this.currentUserSubject.value!;
     if (!userId) {
       return throwError(() => new Error('No user logged in'));
     }
   
     return this.http.put<UserProfile>(`${this.apiUrl}/profile/${userId}`, profileData).pipe(
-      tap(updatedUser => {
+      tap(() => {
+        const updatedUser = {...user, ...profileData}
         this.currentUserSubject.next(updatedUser);
         localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  forgetPassword(email:string): Observable<UserProfile> {
+  
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile/${email}/reset-password`, {}).pipe(
+      tap(() => {
+
       }),
       catchError(this.handleError)
     );
@@ -154,7 +168,9 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        profilePictureUrl: user.profilePictureUrl || null
+        profilePictureUrl: user.profilePictureUrl || null,
+        created_at: user.created_at,
+        updated_at: user.updated_at
       };
     }
     return null;

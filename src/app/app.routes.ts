@@ -33,6 +33,7 @@ export const routes: Routes = [
 
 
   { path: 'quiz/:id', component: QuizComponent },
+  { path: 'summative/:ids', component: QuizComponent },
   { path: 'flashcard/:id', component: FlashcardComponent },
 
   // Keep wildcard route at the end

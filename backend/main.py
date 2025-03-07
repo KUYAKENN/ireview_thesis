@@ -1,6 +1,6 @@
 from datetime import datetime
 import bcrypt
-from flask import Flask, request, jsonify,send_from_directory
+from flask import Flask, request, jsonify,send_from_directory, redirect, url_for
 import fitz  # PyMuPDF
 from flask_cors import CORS  # Import CORS
 import google.generativeai as genai
@@ -21,20 +21,27 @@ import networkx as nx
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import time
+import subprocess
+from dotenv import load_dotenv
+from flask_mail import Mail, Message
+import random
+import string
+
+load_dotenv()
 
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'ireview'
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] =  os.getenv('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 
 mysql = MySQL(app)
 
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:4200"],
+        "origins": ["*"],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "User-ID"]
     }
@@ -62,10 +69,11 @@ def preprocessMarkdown(text):
     text = re.sub(r'`(.*?)`', r'\1', text)  # Remove inline code
     text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)  # Remove links
     text = re.sub(r'\s+', ' ', text).strip()
-    sentences = nltk.sent_tokenize(text)
-    unique_sentences = remove_redundancy(sentences)
-    summary = ''.join([sentence for sentence in unique_sentences])
-    return summary
+    # sentences = nltk.sent_tokenize(text)
+    # unique_sentences = remove_redundancy(sentences)
+    # summary = ''.join([sentence for sentence in unique_sentences])
+    # return summary
+    return text
 
 def sentence_to_vector(sentence):
     """Convert a sentence into a vector representation using spaCy"""
@@ -137,7 +145,7 @@ def extract_named_entities(text):
     return entities
 
 # Step 4: Frequency Distribution (to extract the most common terms)
-def get_frequent_terms(text, num_terms=10):
+def get_frequent_terms(text, num_terms=30):
     words = word_tokenize(text)
     fdist = FreqDist(words)
     return fdist.most_common(num_terms)
@@ -188,7 +196,7 @@ def preprocess_text(text):
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:4200')
+    response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization, User-ID')
     response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
@@ -211,10 +219,12 @@ def login():
                 'message': 'Login successful',
                 'user': {
                     'id': user[0],
-                    'email': user[1],
-                    'firstName': user[2],
-                    'lastName': user[3],
-                    'profilePictureUrl': user[5]
+                    'firstName': user[1],
+                    'lastName': user[2],
+                    'email': user[3],
+                    'profilePictureUrl': user[5],
+                    'created_at': user[6],
+                    'updated_at': user[7]
                 }
             }), 200
         else:
@@ -224,23 +234,23 @@ def login():
         return jsonify({'message': 'Login failed', 'error': str(e)}), 500
 
 
-@app.route('/api/profile/<int:user_id>', methods=['PUT'])
+
+@app.route('/api/profile/<user_id>', methods=['PUT'])
 def update_profile(user_id):
     try:
         data = request.get_json()
         first_name = data.get('firstName')
         last_name = data.get('lastName')
-        email = data.get('email')
 
-        if not first_name or not last_name or not email:
+        if not first_name or not last_name:
             return jsonify({'message': 'Missing required fields'}), 400
 
         cursor = mysql.connection.cursor()
         cursor.execute('''
             UPDATE user_profile 
-            SET first_name = %s, last_name = %s, email = %s, updated_at = NOW()
+            SET first_name = %s, last_name = %s, updated_at = NOW()
             WHERE id = %s
-        ''', (first_name, last_name, email, user_id))
+        ''', (first_name, last_name, user_id))
 
         mysql.connection.commit()
         cursor.close()
@@ -248,24 +258,106 @@ def update_profile(user_id):
         return jsonify({'message': 'Profile updated successfully'}), 200
 
     except Exception as e:
+        print(str(e))
         return jsonify({'message': 'Profile update failed', 'error': str(e)}), 500
+    
+user_reset_codes = {}
+
+# Setup Flask-Mail
+app.config['MAIL_SERVER'] =  os.getenv('MAIL_SERVER')  # Your SMTP server
+app.config['MAIL_PORT'] =   os.getenv('MAIL_PORT')   # SMTP port
+app.config['MAIL_USE_TLS'] = True  # Use TLS
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] =  os.getenv('MAIL_USERNAME')  # Your email
+app.config['MAIL_PASSWORD'] =  os.getenv('MAIL_PASSWORD')   # Your email password
+app.config['MAIL_DEFAULT_SENDER'] =  os.getenv('MAIL_DEFAULT_SENDER')  # Default sender
+mail = Mail(app)
+
+def generate_reset_code():
+    """Generate a random reset code."""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+
+@app.route('/api/profile/<email>/reset-password', methods=['PUT'])
+def reset_password(email):
+    """Send an email to the user with the password reset link."""
+    # Generate a unique reset code
+    reset_code = generate_reset_code()
+
+    # Store the reset code against the user's email (in-memory for demo purposes)
+    user_reset_codes[email] = reset_code
+
+    # Get the current origin (scheme + domain + port)
+    origin = os.getenv('HOST_URL')  # This gives you the scheme and domain (including port if not 80/443)
+    
+    # Create the reset URL with the current origin
+    reset_url = f'{origin}api/profile/{reset_code}/verify'
+
+    # Compose the email content
+    subject = "Password Reset Request"
+    body = f"""
+    Hello,
+
+    To reset your password, please click on the following link:
+
+    {reset_url}
+
+    Your new password will be: {reset_code}
+
+    If you did not request this password reset, please ignore this email.
+
+    Regards,
+    Your App Team
+    """
+
+    # Send the email
+    msg = Message(subject, recipients=[email], body=body)
+    try:
+        mail.send(msg)
+        return jsonify({"message": "Password reset email sent."}), 200
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": f"Failed to send email: {str(e)}"}), 500
+
+@app.route('/api/profile/<code>/verify', methods=['GET'])
+def verify_reset_code(code):
+    """Verify the reset code from the URL and allow the user to change their password."""
+    # Check if the code exists in the dictionary (or your database)
+    user_email = None
+    for email, stored_code in user_reset_codes.items():
+        if stored_code == code:
+            user_email = email
+            break
+
+    if not user_email:
+        return jsonify({"error": "Invalid reset code"}), 400
+
+    try:
+        reset_to_new_password(user_email, code)
+        del user_reset_codes[email]
+        return  f"Reset code verified for {user_email}. Please proceed to login page and type your new password."
+    except:
+        return  f"This account does not exists in iReview"
+        
+
 
 # Profile picture upload endpoint
-@app.route('/api/profile/<int:user_id>/picture', methods=['POST'])
+@app.route('/api/profile/<user_id>/picture', methods=['POST'])
 def upload_profile_picture(user_id):
     try:
         if 'profile_picture' not in request.files:
+            print('No file provided')
             return jsonify({'message': 'No file provided'}), 400
             
         file = request.files['profile_picture']
+        allowed_file(file.filename)
         if file.filename == '':
+            print('No file selected')
             return jsonify({'message': 'No file selected'}), 400
-            
-        if file and allowed_file(file.filename):
+        if file and allowed_profile_file(file.filename):
             # Generate unique filename
             file_extension = file.filename.rsplit('.', 1)[1].lower()
-            filename = f"profile_{user_id}_{uuid.uuid4()}.{file_extension}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            filename = f"profile_{user_id}.{file_extension}"
+            filepath = os.path.join(UPLOAD_FOLDER+ '/profiles', filename)
             
             # Save file
             file.save(filepath)
@@ -274,7 +366,7 @@ def upload_profile_picture(user_id):
             cursor = mysql.connection.cursor()
             cursor.execute('''
                 UPDATE user_profile 
-                SET profile_picture_url = %s,
+                SET profile_picture = %s,
                     updated_at = %s
                 WHERE id = %s
             ''', (filename, datetime.now(), user_id))
@@ -283,7 +375,7 @@ def upload_profile_picture(user_id):
             
             # Fetch updated user data
             cursor.execute('''
-                SELECT id, email, first_name, last_name, profile_picture_url 
+                SELECT id, email, first_name, last_name, profile_picture
                 FROM user_profile 
                 WHERE id = %s
             ''', (user_id,))
@@ -304,19 +396,22 @@ def upload_profile_picture(user_id):
                     }
                 }), 200
             else:
+                print('User not found')
                 return jsonify({'message': 'User not found'}), 404
-                
-        return jsonify({'message': 'Invalid file type'}), 400
+        else:
+            
+            print(f"Invalid file type")
+            return jsonify({'message': 'Invalid file type'}), 400
         
     except Exception as e:
         print(f"Error uploading profile picture: {str(e)}")
         return jsonify({'message': 'Profile picture upload failed'}), 500
 
 # Helper function to check allowed file types
-def allowed_file(filename):
+def allowed_profile_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    file_extension = filename.rsplit('.', 1)[1].lower() 
+    return file_extension in ALLOWED_EXTENSIONS
 
 @app.route('/api/profile/<int:user_id>/password', methods=['PUT'])
 def update_password(user_id):
@@ -376,21 +471,35 @@ def create_quiz_attempt():
     user_id = request.headers.get('User-ID')
     if not user_id:
         return jsonify({"error": "User is unauthorized"}), 400
+    
     data = request.get_json()
-    quiz_id = data.get('quiz_id')
+    quiz_ids = data.get('quiz_ids')  # Expecting an array of quiz IDs
     score = data.get('score')
     start_time = data.get('start_time')
     end_time = data.get('end_time')
     totalQuestions = data.get('totalQuestions')
 
+    # Insert the quiz attempt record
     cursor = mysql.connection.cursor()
-    cursor.execute('''INSERT INTO quiz_attempts (quiz_id, score, totalQuestions,start_time,end_time, user_id) 
-                      VALUES (%s, %s, %s, %s, %s, %s)''', 
-                   (quiz_id, score, totalQuestions, start_time, end_time,user_id))
+    cursor.execute('''INSERT INTO quiz_attempts (score, totalQuestions, start_time, end_time, user_id) 
+                      VALUES (%s, %s, %s, %s, %s)''', 
+                   (score, totalQuestions, start_time, end_time, user_id))
+    mysql.connection.commit()
+    
+    # Get the ID of the newly created quiz attempt
+    quiz_attempt_id = cursor.lastrowid
+    
+    # Insert records into the quiz_attempt_quizzes table for each quiz
+    for quiz_id in quiz_ids:
+        cursor.execute('''INSERT INTO selected_quizzes (quiz_attempt_id, quiz_id) 
+                          VALUES (%s, %s)''', 
+                       (quiz_attempt_id, quiz_id))
+    
     mysql.connection.commit()
     cursor.close()
     
     return jsonify({'message': 'Quiz attempt created successfully'}), 201
+
 
 
 @app.route('/api/documents', methods=['POST'])
@@ -514,18 +623,19 @@ def get_quiz_attempts():
     
     for item in attempts:
         id = item[0]
-        quiz_id = item[1]
-        score = item[2]
-        totalQuestions = item[3]
-        start_time = item[4]
-        end_time = item[5]
-        
+        score = item[1]
+        totalQuestions = item[2]
+        start_time = item[3]
+        end_time = item[4]
+
+        cursor.execute('SELECT * FROM selected_quizzes WHERE quiz_attempt_id = %s', (id,))
+        quizzes = cursor.fetchall()
 
         
         # Create the quiz data structure
         attempt_data = {
+            'quiz_ids': [quiz[2] for quiz in quizzes] ,
             'id': id,
-            'quiz_id': quiz_id,
             'score': score,
             'totalQuestions': totalQuestions,
             'start_time': start_time,
@@ -620,7 +730,7 @@ def register():
         # Insert new user with profile picture URL if provided
         if profile_picture_url:
             cursor.execute(
-                'INSERT INTO user_profile (first_name, last_name, email, password, profile_picture_url) VALUES (%s, %s, %s, %s, %s)',
+                'INSERT INTO user_profile (first_name, last_name, email, password, profile_picture) VALUES (%s, %s, %s, %s, %s)',
                 (first_name, last_name, email, hashed_password, profile_picture_url)
             )
         else:
@@ -639,7 +749,31 @@ def register():
         print(f"Registration error: {str(e)}")
         return jsonify({'message': 'Internal server error', 'error': str(e)}), 500
 
-
+def reset_to_new_password(email, new_password):
+    """Update the password for an existing user"""
+    cursor = mysql.connection.cursor()
+    
+    # Check if the email exists
+    cursor.execute('SELECT * FROM user_profile WHERE email = %s', (email,))
+    user = cursor.fetchone()
+    
+    if not user:
+       raise 'Error'
+    
+    # Hash the new password
+    hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    
+    # Update the password for the user in the database
+    cursor.execute(
+        'UPDATE user_profile SET password = %s WHERE email = %s',
+        (hashed_password, email)
+    )
+    
+    # Commit the changes
+    mysql.connection.commit()
+    cursor.close()
+    
+    print("Password updated successfully.")
 @app.route('/api/documents', methods=['GET'])
 def get_documents():
     user_id = request.headers.get('User-ID')
@@ -807,6 +941,7 @@ def delete_reviewer(doc_id):
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER + '/profiles', exist_ok=True)
 
 def allowed_file(filename):
     # Check if the file has an allowed extension
@@ -817,6 +952,7 @@ def upload_file():
     user_id = request.headers.get('User-ID')
     if not user_id:
         return jsonify({"error": "User is unauthorized"}), 400
+    
     # Check if a file is provided in the request
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
@@ -836,15 +972,32 @@ def upload_file():
             # Save the file to the server
             file.save(file_path)
 
+            # Convert the file to PDF if it's .docx or .pptx
+            if file_extension in ['docx', 'pptx']:
+                converted_file_path = os.path.join(UPLOAD_FOLDER, f"{file_id}.pdf")
+                # Use LibreOffice to convert the file to PDF
+                conversion_command = [
+                    'soffice', '--headless', '--convert-to', 'pdf', '--outdir',   UPLOAD_FOLDER, file_path                ]
+    
+                subprocess.run(conversion_command, check=True)
+                
+                # After conversion, remove the original file
+                os.remove(file_path)
+                file_path = converted_file_path  # Update file path to the new PDF
+
             # Return the file path or file ID for future processing
-            return jsonify({"file_id": file_id, 'ext': file_extension}), 200
+            return jsonify({"file_id": file_id, 'ext': 'pdf'}), 200
         
+        except subprocess.CalledProcessError as e:
+            print(str(e))
+            return jsonify({"error": f"Error during file conversion: {str(e)}"}), 500
         except Exception as e:
+            print(str(e))
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"error": "Invalid file format. Please upload a PDF, DOCX, or PPTX."}), 400
     
-@app.route('/uploads/<filename>', methods=['GET'])
+@app.route('/uploads/<path:filename>', methods=['GET'])
 def get_uploaded_file(filename):
     # user_id = request.headers.get('User-ID')
     # if not user_id:
@@ -886,10 +1039,6 @@ def pending_reviewer():
     return jsonify({"message": ' '.join(["Your reviewer for", documents[0][1], "is ready!" ])}), 200
         
     # Once file is removed or task is no longer "Processing"
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
-    
 @app.route('/api/generate-reviewer', methods=['POST'])
 def generate_review():
     user_id = request.headers.get('User-ID')
@@ -920,9 +1069,9 @@ def generate_review():
         # # Variable to store the final compiled review
         all_text = ''    
     
-        page_text = pymupdf4llm.to_markdown(file_path)   
+        page_text = pymupdf4llm.to_markdown(file_path) 
         page_text = preprocessMarkdown(page_text) 
-        chunks  = split_text_by_lines(page_text, 250)
+        chunks  = split_text_by_lines(page_text, 250) 
         # page_text = clean_text(page_text)
 
         for i,chunk in enumerate(chunks):
@@ -983,7 +1132,7 @@ def generate_flashcards():
             print(f"Processing page {i+1}")
             page_text = page.get_text("text")  # Extract text from the current page
             flashcards_for_page = items_per_page + (1 if i < extra_items else 0)
-            flashcard_input = f"This is page {i+1}, summarize the key concepts into {flashcards_for_page} flashcards with question (front) and answer (back), format as a list of JSON flashcard objsec. Text: {page_text}"
+            flashcard_input = f"This is page {i+1}, summarize the key concepts into {flashcards_for_page} flashcards with  (front) and  (back), format as a list of JSON flashcard object with keywords on front field and definitions on back field. Text: {page_text}"
 
             flashcard_content = model.generate_content(flashcard_input)  # Assuming model is defined elsewhere
             # Process the flashcard content and format it as a list of questions and answers
@@ -1145,6 +1294,7 @@ def generate_quiz():
         print(str(e))
         return jsonify({"error": str(e)}), 500
 
+debug = os.getenv('DEBUG', 'False').lower() == 'true'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=debug)

@@ -9,17 +9,22 @@
           <span class="name">{{user.firstName}}</span>
         </div>
         
-        <div class="avatar" [class.has-notification]="hasNotification">
-          <span class="avatar-text">{{user.firstName.charAt(0)}}</span>
+        <div class="avatar overflow-hidden" [class.has-notification]="hasNotification">
+
+          <span *ngIf="!user.profilePictureUrl" class="menu-avatar-text">{{user.firstName.charAt(0)}}</span>
+          <img *ngIf="user.profilePictureUrl" style="width: 100%; height: 100%; object-fit: cover;" src="{{getProfileLink(user.profilePictureUrl)}}">
+
           <div class="notification-dot" *ngIf="hasNotification"></div>
         </div>
   
         <!-- Profile Dropdown -->
         <div class="profile-menu" *ngIf="showProfileMenu" [@dropdownAnimation]>
-          <div class="menu-header">
-            <div class="menu-avatar">
-              <span class="menu-avatar-text">{{user.firstName.charAt(0)}}</span>
+          <div class="menu-header ">
+            <div  class="menu-avatar overflow-hidden">
+              <span *ngIf="!user.profilePictureUrl" class="menu-avatar-text">{{user.firstName.charAt(0)}}</span>
+              <img *ngIf="user.profilePictureUrl" style="width: 100%; height: 100%; object-fit: cover;" src="{{getProfileLink(user.profilePictureUrl)}}">
             </div>
+            
             <div class="menu-user-info">
               <span class="profile-name">{{user.firstName}} {{user.lastName}}</span>
               <span class="profile-email">{{user.email}}</span>

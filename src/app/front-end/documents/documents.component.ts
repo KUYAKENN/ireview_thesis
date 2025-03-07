@@ -22,7 +22,7 @@ import { firstValueFrom } from 'rxjs'
             [disabled]="uploading" 
             type="file" 
             (change)="onFileSelected($event)" 
-            accept=".pdf" 
+            accept=".pdf, .docx, .pptx" 
             hidden />
         </label>
       </div>

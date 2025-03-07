@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS flashcard_items;
 DROP TABLE IF EXISTS flashcards;
 DROP TABLE IF EXISTS quiz_items;
+DROP TABLE IF EXISTS selected_quizzes;
 DROP TABLE IF EXISTS quiz_attempts;
 DROP TABLE IF EXISTS quizzes;
 DROP TABLE IF EXISTS reviewers;
@@ -53,16 +54,25 @@ CREATE TABLE quiz_items (
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE  -- Ensures this is linked to the quizzes table
 );
 
+
+
+
 CREATE TABLE quiz_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each quiz
-    quiz_id INT NOT NULL, -- Reference to the document ID related to the quiz (for your case, it could be a document or article)
     score INT NOT NULL,  -- Time limit in seconds for the quiz
     totalQuestions INT NOT NULL,  -- Title of the document associated with the quiz
     start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Date the quiz was last modified
-    end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- Date the quiz was last modified
-    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE  
+    end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+
+CREATE TABLE selected_quizzes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    quiz_attempt_id INT NOT NULL,
+    quiz_id INT NOT NULL, 
+    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+    FOREIGN KEY (quiz_attempt_id) REFERENCES quiz_attempts (id) ON DELETE CASCADE 
+);
 
 CREATE TABLE flashcards (
     id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each quiz

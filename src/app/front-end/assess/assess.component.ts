@@ -34,11 +34,18 @@ type FilterType = 'all' | 'quiz' | 'flashcard'
               <h1 class="text-4xl font-bold text-white mb-2">Assessment Center</h1>
               <p class="text-blue-100">Create and manage your learning materials</p>
             </div>
-            <button (click)="openCreateModal()" 
-                    class="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
-              <span class="text-lg">+</span>
-              Create New
-            </button>
+            <div class='flex gap-2'>
+              <button (click)="openCreateModal()" 
+                      class="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                <span class="text-lg">+</span>
+                Create New
+              </button>
+              <button (click)="openSummativeModal()" 
+                      class="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                <!-- <span class="text-lg">+</span> -->
+                Take Summative
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -176,6 +183,47 @@ type FilterType = 'all' | 'quiz' | 'flashcard'
     </div>
   </div>
 </div>
+
+<div *ngIf="showSummativeModal" 
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 m-4">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-semibold text-gray-800">Combine your Summative Test</h3>
+      <button (click)="closeSummativeModal()" 
+              class="text-gray-400 hover:text-gray-600">
+        ✕
+      </button>
+    </div>
+    
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Select Quizzes
+      </label>
+      <select [(ngModel)]="selectedQuizIds" 
+              multiple
+              size="5"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <option *ngFor="let quiz of quizzes" [value]="quiz.id">
+          {{ quiz.docTitle }}
+        </option>
+      </select>
+      <p class="mt-2 text-sm text-gray-500">Hold Ctrl/Cmd key to select multiple quizzes</p>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <button (click)="closeSummativeModal()" 
+              class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-all">
+        Cancel
+      </button>
+      <button (click)="startQuizMerged()" 
+              [disabled]="loading || selectedQuizIds.length <= 1"
+              class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+        <span *ngIf="loading" class="animate-spin">🔄</span>
+        {{loading ? 'Creating...' : 'Take Summative'}}
+      </button>
+    </div>
+  </div>
+</div>
     </div>
   `,
 })
@@ -216,7 +264,7 @@ export class AssessComponent implements OnInit {
       this.documents = docs;
       const flashcards = await firstValueFrom(this.flashcardService.getAll());
       const quizzes = await firstValueFrom(this.quizService.getAll());
-      
+      this.quizzes = quizzes;
       this.allCreations = [...flashcards, ...quizzes].sort(
         (a, b) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime()
       );
@@ -247,9 +295,20 @@ export class AssessComponent implements OnInit {
     this.showCreateModal = true;
   }
 
+  showSummativeModal:boolean = false;
+  openSummativeModal() {
+    this.showSummativeModal = true;
+  }
+
   closeCreateModal() {
     this.showCreateModal = false;
     this.selectedDocIds = [];
+  }
+
+  selectedQuizIds:string[] = [];
+  closeSummativeModal() {
+    this.showSummativeModal = false;
+    this.selectedQuizIds = [];
   }
 
   async createItem() {
@@ -285,6 +344,11 @@ export class AssessComponent implements OnInit {
     const route = 'totalQuestions' in item ? 'quiz' : 'flashcard';
     this.router.navigate([route, item.id]);
   }
+
+  startQuizMerged() {
+    this.router.navigate(['summative',  this.selectedQuizIds.join(',')]);
+  }
+
   async createItems() {
     if (this.loading || this.selectedDocIds.length === 0) return;
     

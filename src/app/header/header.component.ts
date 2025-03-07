@@ -5,6 +5,7 @@ import { AuthService, UserProfile } from '../services/auth.service';
 import { Subscription } from 'rxjs';
 import { ProfileComponent } from '../front-end/user/profile/profile.component';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-header',
@@ -71,6 +72,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  getProfileLink(profile_path:string|null|undefined){
+    if(!profile_path){
+      return null;
+    }
+    return environment.publicUrl + '/uploads/profiles/' + profile_path
+  }
   toggleProfileMenu(event?: Event) {
     if (event) {
       event.stopPropagation();
@@ -79,8 +86,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openProfileModal() {
-    this.showProfileModal = true;
-    this.showProfileMenu = false;
+    this.router.navigate(['/homepage/user'])
+    // this.showProfileModal = true;
+    // this.showProfileMenu = false;
   }
 
   closeProfileModal() {

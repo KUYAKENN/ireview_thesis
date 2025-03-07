@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil, timer } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil, timer } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 interface UserProfile {
   id: number;
@@ -9,8 +11,8 @@ interface UserProfile {
   last_name: string;
   email: string;
   profile_picture: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 @Component({
@@ -37,7 +39,7 @@ export class UserComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private authService:AuthService) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -50,17 +52,18 @@ export class UserComponent implements OnInit, OnDestroy {
 
   loadUserData(): void {
     this.isLoading = true;
-    
+    const user = this.authService.getCurrentUser();
+    if(!user) return;
     // Simulate API call with timeout
     setTimeout(() => {
       this.user = {
         id: 1,
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john.doe@example.com',
-        profile_picture: null,
-        created_at: '2023-05-15 10:30:00',
-        updated_at: '2023-11-20 14:45:00'
+        first_name: user.firstName,
+        last_name: user.lastName,
+        email: user.email,
+        profile_picture: user.profilePictureUrl,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
       };
 
       this.initForm(); // Initialize form with data
@@ -77,6 +80,13 @@ export class UserComponent implements OnInit, OnDestroy {
       email: this.user.email,
       profile_picture: this.user.profile_picture
     });
+  }
+
+  getProfileLink(profile_path:string|null|undefined){
+    if(!profile_path){
+      return null;
+    }
+    return environment.publicUrl + '/uploads/profiles/' + profile_path
   }
 
   toggleEdit(): void {
@@ -109,7 +119,7 @@ export class UserComponent implements OnInit, OnDestroy {
     // Get form values
     const formValues = this.userForm.value;
     
-    setTimeout(() => {
+    setTimeout(async() => {
       this.user = {
         ...this.user!,
         first_name: formValues.first_name,
@@ -121,13 +131,23 @@ export class UserComponent implements OnInit, OnDestroy {
 
       this.isEditing = false;
       this.isSubmitting = false;
+      await firstValueFrom(this.authService.updateProfile({
+        firstName: formValues.first_name,
+        lastName: formValues.last_name,
+      }))
       this.showSuccessMessage = true;
+
+      if(this.selectedFile){
+        await firstValueFrom(this.authService.updateProfilePicture(this.selectedFile))
+      }
 
       timer(4000).pipe(takeUntil(this.destroy$)).subscribe(() => {
         this.showSuccessMessage = false;
       });
     }, 1000);
   }
+  
+  selectedFile?:File;
 
   onFileSelected(event: Event): void {
     const fileInput = event.target as HTMLInputElement;
@@ -149,6 +169,7 @@ export class UserComponent implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = () => {
       this.imagePreview = reader.result as string;
+      this.selectedFile = file
     };
     reader.readAsDataURL(file);
   }

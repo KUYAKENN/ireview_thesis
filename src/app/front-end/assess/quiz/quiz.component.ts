@@ -77,7 +77,7 @@ interface Question {
           <button 
             *ngIf="!isQuizSubmitted"
             (click)="submitQuiz()"
-            [disabled]="answeredCount !== questions.length"
+            [disabled]="answeredCount !== questions.length || loading"
             class="px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
             Submit Quiz
           </button>
@@ -129,11 +129,27 @@ export class QuizComponent implements OnInit {
       async fetchData(){
         try{
           const quizId = this.route.snapshot.paramMap.get('id');
+          const quizIds = this.route.snapshot.paramMap.get('ids');
           const quizzes =(await firstValueFrom(this.quizService.getAll()));
-          this.quiz = quizzes.find(q=>q.id == Number(quizId));
+
+          if(quizIds){
+            const quizArr = quizIds.split(',');
+            this.quiz = quizzes.find(q=>q.id == Number(quizArr[0]))!;
+            this.quiz.ids = [this.quiz.id]
+            this.quiz.docTitle = 'Summative Test!';
+            for(let i = 1 ; i < quizArr.length; i++) {
+              const quiz = quizzes.find(q=>q.id == Number(quizArr[i]))!;
+              this.quiz.ids.push(quiz.id);
+              this.quiz.questions = [...this.quiz.questions, ...quiz.questions]
+            }
+          }else{
+            this.quiz = quizzes.find(q=>q.id == Number(quizId));
+          }
+
+          
 
           this.quizService.startQuiz(this.quiz!);
-  
+
           this.quizTitle = this.quiz?.docTitle?? 'Please Wait';
   
           this.questions = (this.quiz?.questions ?? []).reduce((acc:Question[],curr:QuizQuestion)=>
@@ -144,7 +160,7 @@ export class QuizComponent implements OnInit {
               correctIndex: curr.correctAnswer
             } as Question]
           }
-            ,[] as Question[]);
+            ,[] as Question[]).sort(() => Math.random() - 0.5);
 
           
     
@@ -157,13 +173,16 @@ export class QuizComponent implements OnInit {
     return this.questions.filter(q => typeof q.userAnswer !== 'undefined').length
   }
 
+  loading:boolean = false;
   async submitQuiz() {
     if (this.answeredCount !== this.questions.length) {
       return
     }
 
     this.score = this.questions.filter(q => q.userAnswer === q.correctIndex).length
+    this.loading = true;
     await this.quizService.completeQuiz(this.score, this.questions.length);
+    this.loading = false;
     
     this.isQuizSubmitted = true
 

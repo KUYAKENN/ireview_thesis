@@ -12,6 +12,9 @@ rake_nltk
 spacy
 networkx
 scikit-learn
-
-# After running `pip install -r requirements.txt`, run the following command to download the SpaCy model:
+python-dotenv
+Flask-Mail
+# python-docx
+# python-pptx
+# After running `pwip install -r requirements.txt`, run the following command to download the SpaCy model:
 # python -m spacy download en_core_web_sm

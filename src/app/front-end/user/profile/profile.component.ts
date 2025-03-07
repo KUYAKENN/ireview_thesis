@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,11 +16,11 @@ export class ProfileComponent implements OnInit {
   profileImage: string | ArrayBuffer | null = null;
   isEditing = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService:AuthService) {
     this.profileForm = this.fb.group({
-      firstName: ['John', Validators.required],
-      lastName: ['Doe', Validators.required],
-      email: ['john.doe@example.com', [Validators.required, Validators.email]]
+      firstName: [this.authService.getCurrentUser()?.firstName, Validators.required],
+      lastName: [this.authService.getCurrentUser()?.lastName, Validators.required],
+      email: [this.authService.getCurrentUser()?.email, [Validators.required, Validators.email]]
     });
   }
 
@@ -34,17 +36,21 @@ export class ProfileComponent implements OnInit {
   cancelEdit(): void {
     this.isEditing = false;
     this.profileForm.reset({
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com'
+      firstName: this.authService.getCurrentUser()?.firstName,
+      lastName: this.authService.getCurrentUser()?.lastName,
+      email: this.authService.getCurrentUser()?.email
     });
     this.profileForm.markAsPristine();
     this.profileForm.disable();
   }
 
-  onSubmit(): void {
+  async onSubmit() {
     if (this.profileForm.valid) {
       console.log('Profile updated:', this.profileForm.value);
+      await firstValueFrom(this.authService.updateProfile({
+          firstName: this.profileForm.value.firstName,
+          lastName: this.profileForm.value.lastName,
+        }))
       this.isEditing = false;
       this.profileForm.disable();
     }

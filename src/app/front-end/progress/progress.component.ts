@@ -216,15 +216,17 @@ export class ProgressComponent implements AfterViewInit, OnInit {
     try {
       this.quizzes = await firstValueFrom(this.quizService.getAll());
       const attempts = await this.quizService.getAllAttempts();
-
+      console.log(attempts);
+      
       this.quizData = attempts.reduce((acc: QuizProgress[], attempt: AttemptData) => {
-        const quiz = this.quizzes.find(q => q.id === attempt.quiz_id);
-        if (!quiz) return acc;
-
-        const existingAttempts = acc.filter(a => a.topic === quiz.docTitle).length;
+        const quizzes = this.quizzes.filter(q => attempt.quiz_ids.includes(q.id));
+        console.log(quizzes)
+        if (!quizzes.length) return acc;
+        const title = quizzes.length == 1 ? quizzes[0].docTitle : 'Summative: ' + quizzes.map(a=>a.docTitle).join(', ');
+        const existingAttempts = acc.filter(a => a.topic === title).length;
 
         return [...acc, {
-          topic: quiz.docTitle,
+          topic: title,
           attempt: existingAttempts + 1,
           score: attempt.score,
           maxScore: attempt.totalQuestions,

@@ -6,6 +6,7 @@ import { trigger, transition, style, animate, state, keyframes, group } from '@a
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service'  
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -255,7 +256,8 @@ export class LoginComponent implements OnInit {
         this.isSuccessful = true;
 
         // Show success state briefly
-        setTimeout(() => {
+        setTimeout(async () => {
+          await firstValueFrom(this.authService.forgetPassword(this.forgotPasswordForm.value.email))
           this.isSuccessful = false;
           this.isLoading = false;
           this.showForgotPassword = false;
