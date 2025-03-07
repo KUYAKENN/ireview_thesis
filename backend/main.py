@@ -979,7 +979,11 @@ def upload_file():
                 conversion_command = [
                     'soffice', '--headless', '--convert-to', 'pdf', '--outdir',   UPLOAD_FOLDER, file_path                ]
     
-                subprocess.run(conversion_command, check=True)
+                subprocess.run([
+    r"C:\Program Files\LibreOffice\program\soffice.exe",
+    "--headless", "--convert-to", "pdf", "--outdir", UPLOAD_FOLDER, file_path
+], check=True)
+
                 
                 # After conversion, remove the original file
                 os.remove(file_path)
