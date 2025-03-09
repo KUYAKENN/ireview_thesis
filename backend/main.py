@@ -1041,6 +1041,10 @@ def pending_reviewer():
     # Once file is removed or task is no longer "Processing"
 @app.route('/api/generate-reviewer', methods=['POST'])
 def generate_review():
+    import time
+    from datetime import datetime
+    
+    start_time = time.time()
     user_id = request.headers.get('User-ID')
     if not user_id:
         return jsonify({"error": "User is unauthorized"}), 400
@@ -1116,7 +1120,20 @@ def generate_review():
             page_review = model.generate_content(review_input)
             all_text += f"\n{page_review.text}"
         all_text = page_review.text
-        print('Completed')
+        
+        # Calculate elapsed time
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        minutes, seconds = divmod(elapsed_time, 60)
+        seconds_int = int(seconds)
+        milliseconds = int((seconds - seconds_int) * 1000)
+        
+        # Get current timestamp with milliseconds
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        
+        # Print completion message with timing information including milliseconds
+        print(f'Completed at {current_time}')
+        print(f'Time taken: {int(minutes)} minutes, {seconds_int} seconds and {milliseconds} milliseconds')
         
         # Return the final compiled review
         return jsonify({"compiled_review": all_text.replace("```html", "").replace("```", "").replace("\n", "")}), 200
