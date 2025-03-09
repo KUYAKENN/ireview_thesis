@@ -26,5 +26,5 @@ keywords_with_scores = rake.get_ranked_phrases_with_scores()
 # Print the result
 for i, (score, phrase) in enumerate(keywords_with_scores):
     print(f"Score: {score}, Keyword: {phrase}")
-    if i > 20:  # Only print the top 20 keywords
+    if i > 100:  # Only print the top 100 keywords
         exit()

@@ -14,7 +14,7 @@ def clean_text(text):
     text = re.sub(r'[^A-Za-z\s]', '', text.lower())
     return text
 
-def summarize_with_word_frequencies(text, threshold=1.5):
+def summarize_with_word_frequencies(text, threshold=0.0):
     stop_words = set(stopwords.words('english'))
     
     # Clean the text

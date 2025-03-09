@@ -28,7 +28,7 @@ def sentence_to_vector(sentence):
     doc = nlp(sentence)
     return doc.vector
 
-def remove_redundancy(sentences, threshold=0.8):
+def remove_redundancy(sentences, threshold=0.1):
     """Remove redundant sentences based on cosine similarity"""
     unique_sentences = []
     sentence_vectors = []
@@ -61,6 +61,6 @@ unique_sentences = remove_redundancy(sentences, threshold=0.8)
 summary = ''.join([sentence for sentence in unique_sentences])
 genai.configure(api_key="AIzaSyDR1Lxpk_tpQetj6LdaiMOWD_xEvl873W0")
 model = genai.GenerativeModel("gemini-1.5-flash")
-review_input = f"Summarize this straight into a complete reviewer, define terms, complete exercises, keep definitions short and add bullets, write response in html and css, format well with black font as default color, use tables for readability, bold titles, for important terms highlight in blue font color: {summary}"
+review_input = f"Summarize this straight into a complete reviewer, define terms, complete exercises, add bullets, write response in html and css, format well with black font as default color, use tables for readability, bold titles, for important terms highlight in blue font color: {summary}"
 page_review = model.generate_content(review_input)  # Ass
 print(page_review.text)

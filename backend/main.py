@@ -979,11 +979,7 @@ def upload_file():
                 conversion_command = [
                     'soffice', '--headless', '--convert-to', 'pdf', '--outdir',   UPLOAD_FOLDER, file_path                ]
     
-                subprocess.run([
-    r"C:\Program Files\LibreOffice\program\soffice.exe",
-    "--headless", "--convert-to", "pdf", "--outdir", UPLOAD_FOLDER, file_path
-], check=True)
-
+                subprocess.run(conversion_command, check=True)
                 
                 # After conversion, remove the original file
                 os.remove(file_path)
@@ -1075,16 +1071,51 @@ def generate_review():
     
         page_text = pymupdf4llm.to_markdown(file_path) 
         page_text = preprocessMarkdown(page_text) 
-        chunks  = split_text_by_lines(page_text, 250) 
+        chunks  = split_text_by_lines(page_text, 500) 
         # page_text = clean_text(page_text)
 
-        for i,chunk in enumerate(chunks):
+        for i, chunk in enumerate(chunks):
             print(f"Processing chunk {i}")
-            review_input = f"Summarize this straight into a complete reviewer, define terms, keep definitions short and add bullets, write response in html and css, format well with black font as default color, use tables for readability, bold titles, for important terms highlight in blue font color, give key take aways and focus points for more study: {chunk}"
-            page_review = model.generate_content(review_input)  # Ass
+            review_input = f"""
+                Create a comprehensive educational reviewer strictly based on the following course material.
+
+                TEXT TO ANALYZE: {chunk}
+
+                Your task:
+                1. Create a structured reviewer with:
+                - A clear title and introduction summarizing the main topic
+                - Well-organized sections with numbered headings if applicable if not then proceed with just the title
+                - Key terms highlighted in blue
+                - Comparative tables where appropriate
+                - Code examples or pseudocode ONLY if they appear in the original text
+                - If there are examples add it 
+                - Key takeaways section based ONLY on information present in the original
+                - Further study suggestions mentioned in the original document
+                - 2-3 practice questions related to the content
+
+                2. IMPORTANT GUIDELINES:
+                - Include ONLY information that is explicitly stated in the original document
+                - Do not add any new concepts, definitions, or explanations not present in the source
+                - Do not make assumptions or draw conclusions beyond what is stated
+                - Maintain the same terminology as used in the original document
+                - Present the information in the same order as it appears in the source
+                - If information seems incomplete, do not attempt to complete it
+                - For code or algorithms, use EXACTLY the same implementations shown in the original
+
+                3. Format the output as clean HTML with:
+                - Consistent styling using CSS
+                - Black text as default with blue for key terms
+                - Bold for section headings
+                - Properly formatted tables for tabular information from the original
+
+                4. End the reviewer with this exact disclaimer (add 2 spaces and it should be on italic and red color):
+                "Note: This iReview focuses on generating text-based summaries from the original document. Figures, images, and visual elements from the original document are not included in this reviewer."
+
+                The reviewer should be a faithful representation of the original document in a more structured and highlighted format.
+                """
+            page_review = model.generate_content(review_input)
             all_text += f"\n{page_review.text}"
         all_text = page_review.text
-        # tasks[file_id] = False
         print('Completed')
         
         # Return the final compiled review
